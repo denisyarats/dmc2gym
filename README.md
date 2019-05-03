@@ -1,4 +1,4 @@
-# An OpenAI Gym like wrapper for the DeepMind Control Suite.
+# OpenAI Gym wrapper for the DeepMind Control Suite.
 
 ### Instalation
 ```
