@@ -1,6 +1,13 @@
 # A Gym like wrapper for the DeepMind control suite.
 
-## Usage
+### Instalation
+```
+git clone git@github.com:1nadequacy/dmc2gym.git
+cd dmc2gym
+pip install .
+```
+
+### Usage
 ```python
 import dmc2gym
 
