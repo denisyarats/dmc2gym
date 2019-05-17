@@ -61,9 +61,9 @@ class DMCWrapper(core.Env):
     def action_space(self):
         return self._action_space
 
-    def seed(self):
-        # seed is set during the env creation
-        pass
+    def seed(self, seed):
+        self._action_space.seed(seed)
+        self._observation_space.seed(seed)
 
     def step(self, action):
         assert self._action_space.contains(action)
