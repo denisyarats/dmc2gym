@@ -57,7 +57,7 @@ class DMCWrapper(core.Env):
         self._action_space = _spec_to_box([self._env.action_spec()])
         if from_pixels:
             self._observation_space = spaces.Box(
-                low=0, high=1, shape=[3, height, width], dtype=np.float32)
+                low=0, high=255, shape=[3, height, width], dtype=np.uint8)
         else:
             self._observation_space = _spec_to_box(
                 self._env.observation_spec().values())
@@ -71,7 +71,7 @@ class DMCWrapper(core.Env):
                 height=self._height,
                 width=self._width,
                 camera_id=self._camera_id)
-            obs = obs.transpose(2, 0, 1) / 255.
+            obs = obs.transpose(2, 0, 1)
         else:
             obs = _flatten_obs(time_step.observation)
         return obs
