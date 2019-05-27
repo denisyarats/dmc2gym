@@ -39,19 +39,42 @@ class DMCWrapper(core.Env):
                  domain_name,
                  task_name,
                  task_kwargs=None,
-                 visualize_reward=True):
+                 visualize_reward=True,
+                 from_pixels=False,
+                 height=84,
+                 width=84,
+                 camera_id=0):
         assert 'random' in task_kwargs, 'please specify a seed, for deterministic behaviour'
+        self._from_pixels = from_pixels
+        self._height = height
+        self._width = width
+        self._camera_id = camera_id
         self._env = suite.load(
             domain_name=domain_name,
             task_name=task_name,
             task_kwargs=task_kwargs,
             visualize_reward=visualize_reward)
         self._action_space = _spec_to_box([self._env.action_spec()])
-        self._observation_space = _spec_to_box(
-            self._env.observation_spec().values())
+        if from_pixels:
+            self._observation_space = spaces.Box(
+                low=0, high=1, shape=[3, height, width], dtype=np.float32)
+        else:
+            self._observation_space = _spec_to_box(
+                self._env.observation_spec().values())
 
     def __getattr__(self, name):
         return getattr(self._env, name)
+
+    def _get_obs(self, time_step):
+        if self._from_pixels:
+            obs = self.render(
+                height=self._height,
+                width=self._width,
+                camera_id=self._camera_id)
+            obs = obs.transpose(2, 0, 1) / 255.
+        else:
+            obs = _flatten_obs(time_step.observation)
+        return obs
 
     @property
     def observation_space(self):
@@ -68,7 +91,7 @@ class DMCWrapper(core.Env):
     def step(self, action):
         assert self._action_space.contains(action)
         time_step = self._env.step(action)
-        obs = _flatten_obs(time_step.observation)
+        obs = self._get_obs(time_step)
         reward = time_step.reward or 0
         done = time_step.last()
         info = {'discount': time_step.discount}
@@ -76,7 +99,8 @@ class DMCWrapper(core.Env):
 
     def reset(self):
         time_step = self._env.reset()
-        return _flatten_obs(time_step.observation)
+        obs = self._get_obs(time_step)
+        return obs
 
     def render(self, mode='rgb_array', height=64, width=64, camera_id=0):
         assert mode == 'rgb_array', 'only support rgb_array mode, given %s' % mode
