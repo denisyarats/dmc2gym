@@ -2,12 +2,19 @@ import gym
 from gym.envs.registration import register
 
 
-def make(domain_name, task_name, seed=1, visualize_reward=True, from_pixels=False):
+def make(domain_name,
+         task_name,
+         seed=1,
+         visualize_reward=True,
+         from_pixels=False,
+         height=84,
+         width=84,
+         camera_id=0):
     env_id = 'dmc_%s_%s-v1' % (domain_name, task_name)
-    
+
     if from_pixels:
         assert not visualize_reward, 'cannot use visualize reward when learning from pixels'
-        
+
     register(
         id=env_id,
         entry_point='dmc2gym.wrappers:DMCWrapper',
@@ -18,7 +25,10 @@ def make(domain_name, task_name, seed=1, visualize_reward=True, from_pixels=Fals
                 'random': seed
             },
             'visualize_reward': visualize_reward,
-            'from_pixels': from_pixels
+            'from_pixels': from_pixels,
+            'height': height,
+            'width': width,
+            'camera_id': camera_id
         },
         max_episode_steps=1000)
     return gym.make(env_id)
