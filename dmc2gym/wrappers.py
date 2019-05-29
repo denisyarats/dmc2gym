@@ -43,12 +43,14 @@ class DMCWrapper(core.Env):
                  from_pixels=False,
                  height=84,
                  width=84,
-                 camera_id=0):
+                 camera_id=0,
+                 frame_skip=1):
         assert 'random' in task_kwargs, 'please specify a seed, for deterministic behaviour'
         self._from_pixels = from_pixels
         self._height = height
         self._width = width
         self._camera_id = camera_id
+        self._frame_skip = frame_skip
         self._env = suite.load(
             domain_name=domain_name,
             task_name=task_name,
@@ -90,10 +92,14 @@ class DMCWrapper(core.Env):
 
     def step(self, action):
         assert self._action_space.contains(action)
-        time_step = self._env.step(action)
+        reward = 0
+        for _ in range(self._frame_skip):
+            time_step = self._env.step(action)
+            reward += time_step.reward or 0
+            done = time_step.last()
+            if done:
+                break
         obs = self._get_obs(time_step)
-        reward = time_step.reward or 0
-        done = time_step.last()
         info = {'discount': time_step.discount}
         return obs, reward, done, info
 
