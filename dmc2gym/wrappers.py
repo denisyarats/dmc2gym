@@ -56,7 +56,11 @@ class DMCWrapper(core.Env):
             task_name=task_name,
             task_kwargs=task_kwargs,
             visualize_reward=visualize_reward)
-        self._action_space = _spec_to_box([self._env.action_spec()])
+        self._true_action_space = _spec_to_box([self._env.action_spec()])
+        self._norm_action_space = spaces.Box(
+            -1.0 * np.ones(self._true_action_space.shape),
+            +1.0 * np.ones(self._true_action_space.shape),
+            dtype=np.float32)
         if from_pixels:
             self._observation_space = spaces.Box(
                 low=0, high=255, shape=[3, height, width], dtype=np.uint8)
@@ -78,20 +82,32 @@ class DMCWrapper(core.Env):
             obs = _flatten_obs(time_step.observation)
         return obs
 
+    def _convert_action(self, action):
+        action = action.astype(np.float64)
+        true_delta = self._true_action_space.high - self._true_action_space.low
+        norm_delta = self._norm_action_space.high - self._norm_action_space.low
+        action = (action - self._norm_action_space.low) / norm_delta
+        action = action * true_delta + self._true_action_space.low
+        action = action.astype(np.float32)
+        return action
+
     @property
     def observation_space(self):
         return self._observation_space
 
     @property
     def action_space(self):
-        return self._action_space
+        return self._norm_action_space
 
     def seed(self, seed):
-        self._action_space.seed(seed)
+        self._true_action_space.seed(seed)
+        self._norm_action_space.seed(seed)
         self._observation_space.seed(seed)
 
     def step(self, action):
-        assert self._action_space.contains(action)
+        assert self._norm_action_space.contains(action)
+        action = self._convert_action(action)
+        assert self._true_action_space.contains(action)
         reward = 0
         for _ in range(self._frame_skip):
             time_step = self._env.step(action)
