@@ -77,7 +77,7 @@ class DMCWrapper(core.Env):
                 height=self._height,
                 width=self._width,
                 camera_id=self._camera_id)
-            obs = obs.transpose(2, 0, 1)
+            obs = obs.transpose(2, 0, 1).copy()
         else:
             obs = _flatten_obs(time_step.observation)
         return obs
