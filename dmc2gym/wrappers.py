@@ -124,7 +124,9 @@ class DMCWrapper(core.Env):
         obs = self._get_obs(time_step)
         return obs
 
-    def render(self, mode='rgb_array', height=64, width=64, camera_id=0):
+    def render(self, mode='rgb_array', height=None, width=None, camera_id=0):
         assert mode == 'rgb_array', 'only support rgb_array mode, given %s' % mode
+        height = height or self._height
+        width = width or self._width
         return self._env.physics.render(
             height=height, width=width, camera_id=camera_id)
