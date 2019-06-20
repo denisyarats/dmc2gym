@@ -19,21 +19,22 @@ def make(domain_name,
     # shorten episode length
     max_episode_steps = (1000 + frame_skip - 1) // frame_skip
 
-    register(
-        id=env_id,
-        entry_point='dmc2gym.wrappers:DMCWrapper',
-        kwargs={
-            'domain_name': domain_name,
-            'task_name': task_name,
-            'task_kwargs': {
-                'random': seed
+    if not env_id in gym.envs.registry.env_specs:
+        register(
+            id=env_id,
+            entry_point='dmc2gym.wrappers:DMCWrapper',
+            kwargs={
+                'domain_name': domain_name,
+                'task_name': task_name,
+                'task_kwargs': {
+                    'random': seed
+                },
+                'visualize_reward': visualize_reward,
+                'from_pixels': from_pixels,
+                'height': height,
+                'width': width,
+                'camera_id': camera_id,
+                'frame_skip': frame_skip,
             },
-            'visualize_reward': visualize_reward,
-            'from_pixels': from_pixels,
-            'height': height,
-            'width': width,
-            'camera_id': camera_id,
-            'frame_skip': frame_skip,
-        },
-        max_episode_steps=max_episode_steps)
+            max_episode_steps=max_episode_steps)
     return gym.make(env_id)
