@@ -44,7 +44,8 @@ class DMCWrapper(core.Env):
                  height=84,
                  width=84,
                  camera_id=0,
-                 frame_skip=1):
+                 frame_skip=1,
+                 environment_kwargs=None):
         assert 'random' in task_kwargs, 'please specify a seed, for deterministic behaviour'
         self._from_pixels = from_pixels
         self._height = height
@@ -55,7 +56,8 @@ class DMCWrapper(core.Env):
             domain_name=domain_name,
             task_name=task_name,
             task_kwargs=task_kwargs,
-            visualize_reward=visualize_reward)
+            visualize_reward=visualize_reward,
+            environment_kwargs=environment_kwargs)
         self._true_action_space = _spec_to_box([self._env.action_spec()])
         self._norm_action_space = spaces.Box(
             -1.0 * np.ones(self._true_action_space.shape),

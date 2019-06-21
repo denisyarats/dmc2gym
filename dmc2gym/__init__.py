@@ -10,7 +10,8 @@ def make(domain_name,
          height=84,
          width=84,
          camera_id=0,
-         frame_skip=1):
+         frame_skip=1,
+         environment_kwargs=None):
     env_id = 'dmc_%s_%s-v1' % (domain_name, task_name)
 
     if from_pixels:
@@ -29,6 +30,7 @@ def make(domain_name,
                 'task_kwargs': {
                     'random': seed
                 },
+                'environment_kwargs': environment_kwargs,
                 'visualize_reward': visualize_reward,
                 'from_pixels': from_pixels,
                 'height': height,
@@ -36,5 +38,5 @@ def make(domain_name,
                 'camera_id': camera_id,
                 'frame_skip': frame_skip,
             },
-            max_episode_steps=max_episode_steps)
+        max_episode_steps=max_episode_steps)
     return gym.make(env_id)
