@@ -1,6 +1,6 @@
 from gym import core, spaces
 from dm_control import suite
-from dm_control.rl import specs
+from dm_env import specs
 import numpy as np
 
 
@@ -8,10 +8,10 @@ def _spec_to_box(spec):
     def extract_min_max(s):
         assert s.dtype == np.float64 or s.dtype == np.float32
         dim = np.int(np.prod(s.shape))
-        if type(s) == specs.ArraySpec:
+        if type(s) == specs.Array:
             bound = np.inf * np.ones(dim, dtype=np.float32)
             return -bound, bound
-        elif type(s) == specs.BoundedArraySpec:
+        elif type(s) == specs.BoundedArray:
             zeros = np.zeros(dim, dtype=np.float32)
             return s.minimum + zeros, s.maximum + zeros
 
