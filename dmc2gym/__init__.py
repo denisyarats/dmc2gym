@@ -11,7 +11,7 @@ def make(domain_name,
          width=84,
          camera_id=0,
          frame_skip=1,
-         max_episode_steps_before_skip=1000,
+         episode_length=1000,
          environment_kwargs=None):
     env_id = 'dmc_%s_%s-v1' % (domain_name, task_name)
 
@@ -19,7 +19,7 @@ def make(domain_name,
         assert not visualize_reward, 'cannot use visualize reward when learning from pixels'
 
     # shorten episode length
-    max_episode_steps = (max_episode_steps_before_skip + frame_skip - 1) // frame_skip
+    max_episode_steps = (episode_length + frame_skip - 1) // frame_skip
 
     if not env_id in gym.envs.registry.env_specs:
         register(
