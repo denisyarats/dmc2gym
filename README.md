@@ -5,14 +5,6 @@
 pip install git+git://github.com/1nadequacy/dmc2gym.git
 ```
 
-or
-
-```
-git clone git@github.com:1nadequacy/dmc2gym.git
-cd dmc2gym
-pip install .
-```
-
 ### Usage
 ```python
 import dmc2gym
