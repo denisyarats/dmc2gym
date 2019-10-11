@@ -35,47 +35,63 @@ def _flatten_obs(obs):
 
 
 class DMCWrapper(core.Env):
-    def __init__(self,
-                 domain_name,
-                 task_name,
-                 task_kwargs=None,
-                 visualize_reward=True,
-                 from_pixels=False,
-                 height=84,
-                 width=84,
-                 camera_id=0,
-                 frame_skip=1,
-                 environment_kwargs=None):
+    def __init__(
+        self,
+        domain_name,
+        task_name,
+        task_kwargs=None,
+        visualize_reward={},
+        from_pixels=False,
+        height=84,
+        width=84,
+        camera_id=0,
+        frame_skip=1,
+        environment_kwargs=None
+    ):
         assert 'random' in task_kwargs, 'please specify a seed, for deterministic behaviour'
         self._from_pixels = from_pixels
         self._height = height
         self._width = width
         self._camera_id = camera_id
         self._frame_skip = frame_skip
-        
+
         # create task
         self._env = suite.load(
             domain_name=domain_name,
             task_name=task_name,
             task_kwargs=task_kwargs,
             visualize_reward=visualize_reward,
-            environment_kwargs=environment_kwargs)
-        
+            environment_kwargs=environment_kwargs
+        )
+
         # true and normalized action spaces
         self._true_action_space = _spec_to_box([self._env.action_spec()])
         self._norm_action_space = spaces.Box(
-            low=-1.0, high=1.0, shape=self._true_action_space.shape, dtype=np.float32) 
-        
+            low=-1.0,
+            high=1.0,
+            shape=self._true_action_space.shape,
+            dtype=np.float32
+        )
+
         # create observation space
         if from_pixels:
             self._observation_space = spaces.Box(
-                low=0, high=255, shape=[3, height, width], dtype=np.uint8)
+                low=0, high=255, shape=[3, height, width], dtype=np.uint8
+            )
         else:
             self._observation_space = _spec_to_box(
-                self._env.observation_spec().values())
-            
+                self._env.observation_spec().values()
+            )
+
         self._internal_state_space = spaces.Box(
-            low=-np.inf, high=np.inf, shape=self._env.physics.get_state().shape, dtype=np.float32)
+            low=-np.inf,
+            high=np.inf,
+            shape=self._env.physics.get_state().shape,
+            dtype=np.float32
+        )
+
+        # set seed
+        self.seed(seed=task_kwargs.get('random', 1))
 
     def __getattr__(self, name):
         return getattr(self._env, name)
@@ -85,7 +101,8 @@ class DMCWrapper(core.Env):
             obs = self.render(
                 height=self._height,
                 width=self._width,
-                camera_id=self._camera_id)
+                camera_id=self._camera_id
+            )
             obs = obs.transpose(2, 0, 1).copy()
         else:
             obs = _flatten_obs(time_step.observation)
@@ -122,10 +139,8 @@ class DMCWrapper(core.Env):
         action = self._convert_action(action)
         assert self._true_action_space.contains(action)
         reward = 0
-        extra = {
-            'internal_state': self._env.physics.get_state().copy()
-        }
-        
+        extra = {'internal_state': self._env.physics.get_state().copy()}
+
         for _ in range(self._frame_skip):
             time_step = self._env.step(action)
             reward += time_step.reward or 0
@@ -147,4 +162,5 @@ class DMCWrapper(core.Env):
         width = width or self._width
         camera_id = camera_id or self._camera_id
         return self._env.physics.render(
-            height=height, width=width, camera_id=camera_id)
+            height=height, width=width, camera_id=camera_id
+        )
