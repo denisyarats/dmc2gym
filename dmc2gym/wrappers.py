@@ -48,7 +48,7 @@ class DMCWrapper(core.Env):
         frame_skip=1,
         environment_kwargs=None
     ):
-        assert 'seed' is not None in task_kwargs, 'please specify a seed, for deterministic behaviour'
+        assert 'random' in task_kwargs, 'please specify a seed, for deterministic behaviour'
         self._from_pixels = from_pixels
         self._height = height
         self._width = width
