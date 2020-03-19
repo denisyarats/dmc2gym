@@ -82,13 +82,12 @@ class DMCWrapper(core.Env):
             self._observation_space = _spec_to_box(
                 self._env.observation_spec().values()
             )
-
-        self._internal_state_space = spaces.Box(
-            low=-np.inf,
-            high=np.inf,
-            shape=self._env.physics.get_state().shape,
-            dtype=np.float32
+            
+        self._state_space = _spec_to_box(
+                self._env.observation_spec().values()
         )
+        
+        self.current_state = None
 
         # set seed
         self.seed(seed=task_kwargs.get('random', 1))
@@ -122,8 +121,8 @@ class DMCWrapper(core.Env):
         return self._observation_space
 
     @property
-    def internal_state_space(self):
-        return self._internal_state_space
+    def state_space(self):
+        return self._state_space
 
     @property
     def action_space(self):
@@ -148,11 +147,13 @@ class DMCWrapper(core.Env):
             if done:
                 break
         obs = self._get_obs(time_step)
+        self.current_state = _flatten_obs(time_step.observation)
         extra['discount'] = time_step.discount
         return obs, reward, done, extra
 
     def reset(self):
         time_step = self._env.reset()
+        self.current_state = _flatten_obs(time_step.observation)
         obs = self._get_obs(time_step)
         return obs
 
