@@ -46,7 +46,8 @@ class DMCWrapper(core.Env):
         width=84,
         camera_id=0,
         frame_skip=1,
-        environment_kwargs=None
+        environment_kwargs=None,
+        channels_first=True
     ):
         assert 'random' in task_kwargs, 'please specify a seed, for deterministic behaviour'
         self._from_pixels = from_pixels
@@ -54,6 +55,7 @@ class DMCWrapper(core.Env):
         self._width = width
         self._camera_id = camera_id
         self._frame_skip = frame_skip
+        self._channels_first = channels_first
 
         # create task
         self._env = suite.load(
@@ -75,8 +77,9 @@ class DMCWrapper(core.Env):
 
         # create observation space
         if from_pixels:
+            shape = [3, height, width] if channels_first else [height, width, 3]
             self._observation_space = spaces.Box(
-                low=0, high=255, shape=[3, height, width], dtype=np.uint8
+                low=0, high=255, shape=shape, dtype=np.uint8
             )
         else:
             self._observation_space = _spec_to_box(
@@ -102,7 +105,8 @@ class DMCWrapper(core.Env):
                 width=self._width,
                 camera_id=self._camera_id
             )
-            obs = obs.transpose(2, 0, 1).copy()
+            if self._channels_first:
+                obs = obs.transpose(2, 0, 1).copy()
         else:
             obs = _flatten_obs(time_step.observation)
         return obs
