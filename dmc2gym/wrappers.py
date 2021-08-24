@@ -41,16 +41,22 @@ def _flatten_obs(obs):
 class DMCWrapper(core.Env):
     def __init__(
         self,
+        # suite module
+        suite_module,
+        # env kwargs
         domain_name,
         task_name,
         task_kwargs=None,
-        visualize_reward={},
+        environment_kwargs=None,
+        visualize_reward=False,
+        # step_kwargs
+        frame_skip=1,
         from_pixels=False,
+        # render_kwargs
         height=84,
         width=84,
         camera_id=0,
-        frame_skip=1,
-        environment_kwargs=None,
+        # observation_kwargs
         channels_first=True
     ):
         assert 'random' in task_kwargs, 'please specify a seed, for deterministic behaviour'
@@ -61,13 +67,20 @@ class DMCWrapper(core.Env):
         self._frame_skip = frame_skip
         self._channels_first = channels_first
 
+        # set render kwargs
+        self.render_kwargs = dict(
+            height=height,
+            width=width,
+            camera_id=camera_id,
+        )
+
         # create task
-        self._env = suite.load(
+        self._env = suite_module.load(
             domain_name=domain_name,
             task_name=task_name,
             task_kwargs=task_kwargs,
-            visualize_reward=visualize_reward,
-            environment_kwargs=environment_kwargs
+            environment_kwargs=environment_kwargs,
+            visualize_reward=visualize_reward
         )
 
         # true and normalized action spaces
