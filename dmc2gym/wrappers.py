@@ -120,7 +120,7 @@ class DMCWrapper(core.Env):
         self.current_state = None
 
         # set seed
-        self.seed(seed=task_kwargs.get('random', 1))
+        self.seed(seed=task_kwargs.get('random', 42))
 
     def __getattr__(self, name):
         return getattr(self._env, name)
