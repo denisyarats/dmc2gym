@@ -62,9 +62,6 @@ class DMCWrapper(core.Env):
         assert isinstance(task_kwargs, dict) and 'random' in task_kwargs, \
             "task_kwargs should be a dictionary with a specified seed"
         self._from_pixels = from_pixels
-        self._height = height
-        self._width = width
-        self._camera_id = camera_id
         self._frame_skip = frame_skip
         self._channels_first = channels_first
 
@@ -84,6 +81,12 @@ class DMCWrapper(core.Env):
             visualize_reward=visualize_reward
         )
 
+        # setup metadata for rendering since dm_control is based on MuJoCo Physics
+        # options from gym.envs.mujoco.mujoco_env
+        self.metadata = {
+            "render.modes": ["human", "rgb_array", "grey", "notebook"],
+            # "video.frames_per_second": int(np.round(1.0 / self.dt)),
+        }
         # true and normalized action spaces
         self._true_action_space = _spec_to_box([self._env.action_spec()])
         self._norm_action_space = spaces.Box(
@@ -118,11 +121,7 @@ class DMCWrapper(core.Env):
 
     def _get_obs(self, time_step):
         if self._from_pixels:
-            obs = self.render(
-                height=self._height,
-                width=self._width,
-                camera_id=self._camera_id
-            )
+            obs = self.render(mode="rgb_array")
             if self._channels_first:
                 obs = obs.transpose(2, 0, 1).copy()
         else:
@@ -186,11 +185,26 @@ class DMCWrapper(core.Env):
         obs = self._get_obs(time_step)
         return obs
 
-    def render(self, mode='rgb_array', height=None, width=None, camera_id=0):
-        assert mode == 'rgb_array', 'only support rgb_array mode, given %s' % mode
-        height = height or self._height
-        width = width or self._width
-        camera_id = camera_id or self._camera_id
-        return self._env.physics.render(
-            height=height, width=width, camera_id=camera_id
+    def render(self, mode='rgb_array', height=None, width=None, camera_id=0, **kwargs):
+        img = self._env.physics.render(
+            height=self.render_kwargs['height'] if height is None else height, 
+            width=self.render_kwargs['width'] if width is None else width, 
+            camera_id=self.render_kwargs['camera_id'] if camera_id is None else camera_id, 
+            **kwargs
         )
+
+        if mode in ['rgb', 'rgb_array']:
+            return img.astype(np.uint8)
+        elif mode in ['gray', 'grey']:
+            return img.mean(axis=-1, keepdims=True).astype(np.uint8)
+        elif mode == 'notebook':
+            from IPython.display import display
+            from PIL import Image
+            img = Image.fromarray(img, "RGB")
+            display(img)
+            return img
+        elif mode == 'human':
+            from PIL import Image
+            return Image.fromarray(img)
+        else:
+            raise NotImplementedError(f"`{mode}` mode is not implemented")
