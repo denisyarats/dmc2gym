@@ -152,12 +152,12 @@ class DMCWrapper(core.Env):
         assert self._norm_action_space.contains(action)
         action = self._convert_action(action)
         assert self._true_action_space.contains(action)
-        reward = 0
+        reward = float(0)
         extra = {'internal_state': self._env.physics.get_state().copy()}
 
         for _ in range(self._frame_skip):
             time_step = self._env.step(action)
-            reward += time_step.reward or 0
+            reward += time_step.reward or float(0)
             done = time_step.last()
             if done:
                 break
