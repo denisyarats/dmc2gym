@@ -13,10 +13,10 @@ def _spec_to_box(spec):
         assert s.dtype == np.float64 or s.dtype == np.float32
         dim = np.int(np.prod(s.shape))
         if type(s) == specs.Array:
-            bound = np.inf * np.ones(dim, dtype=np.float32)
+            bound = np.inf * np.ones(dim, dtype=np.float64)
             return -bound, bound
         elif type(s) == specs.BoundedArray:
-            zeros = np.zeros(dim, dtype=np.float32)
+            zeros = np.zeros(dim, dtype=np.float64)
             return s.minimum + zeros, s.maximum + zeros
 
     mins, maxs = [], []
@@ -27,7 +27,7 @@ def _spec_to_box(spec):
     low = np.concatenate(mins, axis=0)
     high = np.concatenate(maxs, axis=0)
     assert low.shape == high.shape
-    return spaces.Box(low, high, dtype=np.float32)
+    return spaces.Box(low, high, dtype=np.float64)
 
 
 def _flatten_obs(obs):
@@ -76,7 +76,7 @@ class DMCWrapper(core.Env):
             low=-1.0,
             high=1.0,
             shape=self._true_action_space.shape,
-            dtype=np.float32
+            dtype=np.float64
         )
 
         # create observation space
@@ -121,7 +121,7 @@ class DMCWrapper(core.Env):
         norm_delta = self._norm_action_space.high - self._norm_action_space.low
         action = (action - self._norm_action_space.low) / norm_delta
         action = action * true_delta + self._true_action_space.low
-        action = action.astype(np.float32)
+        action = action.astype(np.float64)
         return action
 
     @property
