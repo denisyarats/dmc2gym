@@ -59,7 +59,8 @@ class DMCWrapper(core.Env):
         # observation_kwargs
         channels_first=True
     ):
-        assert 'random' in task_kwargs, 'please specify a seed, for deterministic behaviour'
+        assert isinstance(task_kwargs, dict) and 'random' in task_kwargs, \
+            "task_kwargs should be a dictionary with a specified seed"
         self._from_pixels = from_pixels
         self._height = height
         self._width = width
