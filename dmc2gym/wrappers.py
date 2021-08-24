@@ -41,12 +41,12 @@ def _flatten_obs(obs):
 class DMCWrapper(core.Env):
     def __init__(
         self,
-        # suite module
-        suite_module,
+        # suite module environment loading function
+        suite_load_fn,
         # env kwargs
         domain_name,
         task_name,
-        task_kwargs=None,
+        task_kwargs={},
         environment_kwargs=None,
         visualize_reward=False,
         # step_kwargs
@@ -59,8 +59,6 @@ class DMCWrapper(core.Env):
         # observation_kwargs
         channels_first=True
     ):
-        assert isinstance(task_kwargs, dict) and 'random' in task_kwargs, \
-            "task_kwargs should be a dictionary with a specified seed"
         self._from_pixels = from_pixels
         self._frame_skip = frame_skip
         self._channels_first = channels_first
@@ -73,7 +71,7 @@ class DMCWrapper(core.Env):
         )
 
         # create task
-        self._env = suite_module.load(
+        self._env = suite_load_fn(
             domain_name=domain_name,
             task_name=task_name,
             task_kwargs=task_kwargs,

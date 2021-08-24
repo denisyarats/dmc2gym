@@ -25,7 +25,7 @@ def register_env(
         # dm_control env kwargs
         domain_name,
         task_name,
-        task_kwargs=None,
+        task_kwargs={},
         environment_kwargs=None,
         visualize_reward=False,
         # step_kwargs
@@ -58,8 +58,8 @@ def register_env(
         id=env_id,
         entry_point='dmc2gym.wrappers:DMCWrapper',
         kwargs=dict(
-            # suite module
-            suite_module=suite_module, 
+            # suite module environment loading function
+            suite_load_fn=suite_module.load, 
             # env kwargs
             domain_name=domain_name,
             task_name=task_name,
