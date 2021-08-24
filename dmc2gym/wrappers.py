@@ -5,6 +5,8 @@ from dm_control import suite
 from dm_env import specs
 import numpy as np
 
+from gym.utils import seeding
+
 
 def _spec_to_box(spec):
     def extract_min_max(s):
@@ -133,11 +135,18 @@ class DMCWrapper(core.Env):
     @property
     def action_space(self):
         return self._norm_action_space
+    
+    @property
+    def np_random(self):
+        """Returns the np.random.RandomState instance of `self._env.task._random`"""
+        return self._env.task._random
 
-    def seed(self, seed):
-        self._true_action_space.seed(seed)
-        self._norm_action_space.seed(seed)
-        self._observation_space.seed(seed)
+    def seed(self, seed=None):
+        """Wrapper seeding sets the seed in `self._env.task` using the seeding scheme in `gym.utils.seeding`
+        Note this will results in different seeding schema between dm_control-only and wrapperd environments"""
+        self._env.task._random, seed = seeding.np_random(seed)
+
+        return [seed]
 
     def step(self, action):
         assert self._norm_action_space.contains(action)
