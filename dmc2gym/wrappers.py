@@ -1,7 +1,8 @@
 # MODIFIED BY Yawen Duan (https://github.com/kmdanielduan) to be able to 
 # use `suite_module` to load environments from a dm_control based suite
+
+
 from gym import core, spaces
-from dm_control import suite
 from dm_env import specs
 import numpy as np
 
