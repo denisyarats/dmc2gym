@@ -44,7 +44,7 @@ def register_env(
 ):
     """Register a single dm_control based environment by identifier (domain_name, task_name)"""
     assert hasattr(suite_module, "load"), f"{suite_module} doesn't have load() attribute."
-    env_id = 'DMC/%s-%s-v0' % (domain_name, task_name)
+    env_id = 'DMC-%s-%s-v0' % (domain_name, task_name)
 
     if from_pixels:
         assert not visualize_reward, 'cannot use visualize reward when learning from pixels'
