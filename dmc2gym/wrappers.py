@@ -87,6 +87,11 @@ class DMCWrapper(core.Env):
             "render.modes": ["human", "rgb_array", "grey", "notebook"],
             # "video.frames_per_second": int(np.round(1.0 / self.dt)),
         }
+
+        # attribute in gym.Env a default reward range set to [-inf,+inf] already exists. 
+        # Set it if you want a narrower range.
+        self.reward_range = (-float("inf"), float("inf"))
+
         # true and normalized action spaces
         self._true_action_space = _spec_to_box([self._env.action_spec()])
         self._norm_action_space = spaces.Box(
