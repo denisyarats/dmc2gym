@@ -1,5 +1,5 @@
-import gym
-from gym.envs.registration import register
+# MODIFIED BY Yawen Duan (https://github.com/kmdanielduan) to be able to 
+# use `suite_load_fn` to load arbitrary `dm.env` from dm_control
 
 
 def make(
