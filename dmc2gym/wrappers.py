@@ -1,10 +1,9 @@
-# MODIFIED BY Yawen Duan (https://github.com/kmdanielduan) to be able to 
+# MODIFIED BY Yawen Duan (https://github.com/kmdanielduan) to be able to
 # use `suite_module` to load environments from a dm_control based suite
 
-from gym import core, spaces
-from dm_env import specs
 import numpy as np
-
+from dm_env import specs
+from gym import core, spaces
 from gym.utils import seeding
 
 
@@ -57,7 +56,7 @@ class DMCWrapper(core.Env):
         width=84,
         camera_id=0,
         # observation_kwargs
-        channels_first=True
+        channels_first=True,
     ):
         self._from_pixels = from_pixels
         self._frame_skip = frame_skip
@@ -76,27 +75,24 @@ class DMCWrapper(core.Env):
             task_name=task_name,
             task_kwargs=task_kwargs,
             environment_kwargs=environment_kwargs,
-            visualize_reward=visualize_reward
+            visualize_reward=visualize_reward,
         )
 
-        # setup metadata for rendering since dm_control is based on MuJoCo Physics
+        # setup metadata for rendering since dm_control bases on MuJoCo Physics
         # options from gym.envs.mujoco.mujoco_env
         self.metadata = {
             "render.modes": ["human", "rgb_array", "grey", "notebook"],
             # "video.frames_per_second": int(np.round(1.0 / self.dt)),
         }
 
-        # attribute in gym.Env a default reward range set to [-inf,+inf] already exists. 
-        # Set it if you want a narrower range.
+        # reward_range is an attribute in gym.Env,
+        # Default to be [-inf,+inf]. Set it if you want a narrower range.
         self.reward_range = (-float("inf"), float("inf"))
 
         # true and normalized action spaces
         self._true_action_space = _spec_to_box([self._env.action_spec()])
         self._norm_action_space = spaces.Box(
-            low=-1.0,
-            high=1.0,
-            shape=self._true_action_space.shape,
-            dtype=np.float64
+            low=-1.0, high=1.0, shape=self._true_action_space.shape, dtype=np.float64
         )
 
         # create observation space
@@ -109,15 +105,13 @@ class DMCWrapper(core.Env):
             self._observation_space = _spec_to_box(
                 self._env.observation_spec().values()
             )
-            
-        self._state_space = _spec_to_box(
-                self._env.observation_spec().values()
-        )
-        
+
+        self._state_space = _spec_to_box(self._env.observation_spec().values())
+
         self.current_state = None
 
         # set seed
-        self.seed(seed=task_kwargs.get('random', 42))
+        self.seed(seed=task_kwargs.get("random", 42))
 
     def __getattr__(self, name):
         return getattr(self._env, name)
@@ -151,10 +145,10 @@ class DMCWrapper(core.Env):
     @property
     def action_space(self):
         return self._norm_action_space
-    
+
     @property
     def np_random(self):
-        """Returns the np.random.RandomState instance of `self._env.task._random`"""
+        """Returns the np.random.RandomState object `self._env.task._random`"""
         return self._env.task._random
 
     def seed(self, seed=None):
@@ -169,7 +163,7 @@ class DMCWrapper(core.Env):
         action = self._convert_action(action)
         assert self._true_action_space.contains(action)
         reward = float(0)
-        extra = {'internal_state': self._env.physics.get_state().copy()}
+        extra = {"internal_state": self._env.physics.get_state().copy()}
 
         for _ in range(self._frame_skip):
             time_step = self._env.step(action)
@@ -179,7 +173,7 @@ class DMCWrapper(core.Env):
                 break
         obs = self._get_obs(time_step)
         self.current_state = _flatten_obs(time_step.observation)
-        extra['discount'] = time_step.discount
+        extra["discount"] = time_step.discount
         return obs, reward, done, extra
 
     def reset(self):
@@ -188,26 +182,30 @@ class DMCWrapper(core.Env):
         obs = self._get_obs(time_step)
         return obs
 
-    def render(self, mode='rgb_array', height=None, width=None, camera_id=0, **kwargs):
+    def render(self, mode="rgb_array", height=None, width=None, camera_id=0, **kwargs):
         img = self._env.physics.render(
-            height=self.render_kwargs['height'] if height is None else height, 
-            width=self.render_kwargs['width'] if width is None else width, 
-            camera_id=self.render_kwargs['camera_id'] if camera_id is None else camera_id, 
-            **kwargs
+            height=self.render_kwargs["height"] if height is None else height,
+            width=self.render_kwargs["width"] if width is None else width,
+            camera_id=self.render_kwargs["camera_id"]
+            if camera_id is None
+            else camera_id,
+            **kwargs,
         )
 
-        if mode in ['rgb', 'rgb_array']:
+        if mode in ["rgb", "rgb_array"]:
             return img.astype(np.uint8)
-        elif mode in ['gray', 'grey']:
+        elif mode in ["gray", "grey"]:
             return img.mean(axis=-1, keepdims=True).astype(np.uint8)
-        elif mode == 'notebook':
+        elif mode == "notebook":
             from IPython.display import display
             from PIL import Image
+
             img = Image.fromarray(img, "RGB")
             display(img)
             return img
-        elif mode == 'human':
+        elif mode == "human":
             from PIL import Image
+
             return Image.fromarray(img)
         else:
             raise NotImplementedError(f"`{mode}` mode is not implemented")
