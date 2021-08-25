@@ -8,8 +8,7 @@ setup(
     description=('a gym like wrapper for dm_control'),
     license='',
     keywords='gym dm_control openai deepmind',
-    packages=find_packages("dmc2gym"),
-    package_dir={"": "dmc2gym"},
+    packages=find_packages(),
     install_requires=[
         'gym',
         'dm_control',
