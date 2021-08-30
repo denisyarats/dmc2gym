@@ -94,7 +94,7 @@ class DMCWrapper(core.Env):
         # options from gym.envs.mujoco.mujoco_env
         self.metadata = {
             "render.modes": ["human", "rgb_array", "grey", "notebook"],
-            # "video.frames_per_second": int(np.round(1.0 / self.dt)),
+            "video.frames_per_second": int(np.round(1.0 / self.dt)),
         }
 
         # reward_range is an attribute in gym.Env,
@@ -157,11 +157,16 @@ class DMCWrapper(core.Env):
     @property
     def action_space(self):
         return self._norm_action_space
+    
+    @property
+    def dt(self):
+        return self._env.physics.timestep() * self._frame_skip
 
     @property
     def np_random(self):
         """Returns the np.random.RandomState object `self._env.task._random`"""
         return self._env.task._random
+
 
     def seed(self, seed=None):
         """Wrapper seeding sets the seed in `self._env.task` using the seeding scheme in `gym.utils.seeding`
