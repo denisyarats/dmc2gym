@@ -1,33 +1,45 @@
 # MODIFIED BY Yawen Duan (https://github.com/kmdanielduan) to be able to
 # use `suite_module` to load environments from a dm_control based suite
 
+from typing import Union, Mapping
+
 import numpy as np
 from dm_env import specs
 from gym import core, spaces
 from gym.utils import seeding
 
 
-def _spec_to_box(spec):
-    def extract_min_max(s):
-        assert s.dtype == np.float64 or s.dtype == np.float32
-        dim = np.int(np.prod(s.shape))
-        if type(s) == specs.Array:
-            bound = np.inf * np.ones(dim, dtype=np.float64)
-            return -bound, bound
-        elif type(s) == specs.BoundedArray:
-            zeros = np.zeros(dim, dtype=np.float64)
-            return s.minimum + zeros, s.maximum + zeros
+def _extract_min_max(s):
+    assert s.dtype == np.float64 or s.dtype == np.float32
+    dim = np.int(np.prod(s.shape))
+    if type(s) == specs.Array:
+        bound = np.inf * np.ones(dim, dtype=s.dtype)
+        return -bound, bound
+    elif type(s) == specs.BoundedArray:
+        zeros = np.zeros(dim, dtype=s.dtype)
+        return s.minimum + zeros, s.maximum + zeros
 
+def _action_spec_to_box(spec: Union[specs.Array, specs.BoundedArray]) -> spaces.Box:
+    low, high = _extract_min_max(spec)
+    assert low.shape == high.shape
+    return spaces.Box(low, high, dtype=spec.dtype)
+
+def _obs_spec_to_box(spec: Mapping[str, Union[specs.Array, specs.BoundedArray]]) -> spaces.Box:
+    spec_values = spec.values()
     mins, maxs = [], []
-    for s in spec:
-        mn, mx = extract_min_max(s)
+    for s in spec_values:
+        mn, mx = _extract_min_max(s)
         mins.append(mn)
         maxs.append(mx)
     low = np.concatenate(mins, axis=0)
     high = np.concatenate(maxs, axis=0)
     assert low.shape == high.shape
-    return spaces.Box(low, high, dtype=np.float64)
-
+    # ! WARNING (yawen): Setting obs_spec dtype to be that of the first element of observation
+    # A more principled thing to do is represent observation as a dict as dm_control does,
+    # and flattening observation to arrays externally.
+    res_dtype = list(spec_values)[0].dtype
+    assert all(v.dtype == res_dtype for v in spec_values)
+    return spaces.Box(low, high, dtype=res_dtype)
 
 def _flatten_obs(obs):
     obs_pieces = []
@@ -90,9 +102,9 @@ class DMCWrapper(core.Env):
         self.reward_range = (-float("inf"), float("inf"))
 
         # true and normalized action spaces
-        self._true_action_space = _spec_to_box([self._env.action_spec()])
+        self._true_action_space = _action_spec_to_box(self._env.action_spec())
         self._norm_action_space = spaces.Box(
-            low=-1.0, high=1.0, shape=self._true_action_space.shape, dtype=np.float64
+            low=-1.0, high=1.0, shape=self._true_action_space.shape, dtype=self._true_action_space.dtype
         )
 
         # create observation space
@@ -102,11 +114,11 @@ class DMCWrapper(core.Env):
                 low=0, high=255, shape=shape, dtype=np.uint8
             )
         else:
-            self._observation_space = _spec_to_box(
-                self._env.observation_spec().values()
+            self._observation_space = _obs_spec_to_box(
+                self._env.observation_spec()
             )
 
-        self._state_space = _spec_to_box(self._env.observation_spec().values())
+        self._state_space = _obs_spec_to_box(self._env.observation_spec())
 
         self.current_state = None
 
@@ -131,7 +143,7 @@ class DMCWrapper(core.Env):
         norm_delta = self._norm_action_space.high - self._norm_action_space.low
         action = (action - self._norm_action_space.low) / norm_delta
         action = action * true_delta + self._true_action_space.low
-        action = action.astype(np.float64)
+        action = action.astype(np.float32)
         return action
 
     @property
