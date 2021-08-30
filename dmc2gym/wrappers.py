@@ -200,12 +200,13 @@ class DMCWrapper(core.Env):
         return obs
 
     def render(self, mode="rgb_array", height=None, width=None, camera_id=0, **kwargs):
+        height_ = self.render_kwargs["height"] if height is None else height
+        width_ = self.render_kwargs["width"] if width is None else width
+        camera_id_ = self.render_kwargs["camera_id"] if camera_id is None else camera_id
         img = self._env.physics.render(
-            height=self.render_kwargs["height"] if height is None else height,
-            width=self.render_kwargs["width"] if width is None else width,
-            camera_id=self.render_kwargs["camera_id"]
-            if camera_id is None
-            else camera_id,
+            height = height_,
+            width = width_,
+            camera_id = camera_id_,
             **kwargs,
         )
 
