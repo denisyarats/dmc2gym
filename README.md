@@ -14,10 +14,11 @@ pip install git+git://github.com/kmdanielduan/dmc2gym.git
 ### Usage
 ```python
 from dm_control import suite
-from dmc2gym import register_suite, register_env
+from dmc2gym import register_suite, register_env, dmc_task2str
 
 register_suite(suite, tag='easy')  # register all tasks with tag 'easy' in the suite to gym registry
-env = dmc2gym.make(domain_name='point_mass', task_name='easy', task_kwargs=dict(random=42))  # make environments directly
+env_id = dmc_task2str('point_mass', 'easy')  # convert to "point_mass-easy-v0"
+env = gym.make(env_id, task_kwargs=dict(random=42))  # make environments directly
 
 done = False
 obs = env.reset()

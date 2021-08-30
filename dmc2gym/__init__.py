@@ -5,9 +5,10 @@ import gym
 
 from dmc2gym.registration import register_env, register_suite
 from dmc2gym.wrappers import DMCWrapper
+from dmc2gym.utils import dmc_task2str
 
-__all__ = ["DMCWrapper", "register_suite", "register_env", "make"]
 
+__all__ = ["DMCWrapper", "register_suite", "register_env", "dmc_task2str"]
 
 def make(domain_name, task_name, **kwargs):
     env_id = "DMC-%s-%s-v0" % (domain_name, task_name)

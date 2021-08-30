@@ -6,6 +6,7 @@
 import gym
 from gym.envs.registration import register as gym_reg
 
+from dmc2gym.utils import dmc_task2str
 
 def register_suite(
     suite_module,
@@ -48,7 +49,7 @@ def register_env(
     assert hasattr(
         suite_module, "load"
     ), f"{suite_module} doesn't have load() attribute."
-    env_id = "DMC-%s-%s-v0" % (domain_name, task_name)
+    env_id = dmc_task2str(domain_name, task_name)
 
     if from_pixels:
         assert (
