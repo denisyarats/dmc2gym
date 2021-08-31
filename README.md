@@ -18,7 +18,7 @@ pip install git+git://github.com/kmdanielduan/dmc2gym.git
 ```python
 import gym
 from dm_control import suite
-from dmc2gym import register_suite, register_env, dmc_task2str
+from dmc2gym import register_suite, dmc_task2str
 
 register_suite(suite, tag='easy')  # register all tasks with tag 'easy' in the suite to gym registry
 env_id = dmc_task2str('point_mass', 'easy')  # convert to "point_mass-easy-v0"
