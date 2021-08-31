@@ -143,7 +143,7 @@ class DMCWrapper(core.Env):
         norm_delta = self._norm_action_space.high - self._norm_action_space.low
         action = (action - self._norm_action_space.low) / norm_delta
         action = action * true_delta + self._true_action_space.low
-        action = action.astype(np.float32)
+        action = action.astype(self._true_action_space.dtype)
         return action
 
     @property
