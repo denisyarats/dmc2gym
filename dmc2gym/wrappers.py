@@ -199,7 +199,7 @@ class DMCWrapper(core.Env):
         obs = self._get_obs(time_step)
         return obs
 
-    def render(self, mode="rgb_array", height=None, width=None, camera_id=0, **kwargs):
+    def render(self, mode="human", height=None, width=None, camera_id=0, **kwargs):
         height_ = self.render_kwargs["height"] if height is None else height
         width_ = self.render_kwargs["width"] if width is None else width
         camera_id_ = self.render_kwargs["camera_id"] if camera_id is None else camera_id
