@@ -40,10 +40,6 @@ def register_env(
     camera_id=0,
     # observation_kwargs
     channels_first=True,
-    # others
-    # TODO(yawen): build a unit test of fixed horizon to check which of
-    # time_limit and episode_length actually have effects on episode length
-    episode_length=1000,
 ):
     """Register a single dm_control based environment by identifier (domain_name, task_name)"""
     assert hasattr(
@@ -55,9 +51,6 @@ def register_env(
         assert (
             not visualize_reward
         ), "cannot use visualize reward when learning from pixels"
-
-    # shorten episode length
-    max_episode_steps = (episode_length + frame_skip - 1) // frame_skip
 
     # we hope each environment can only be registered once, flag error when it's registered multiple times
     assert (
@@ -85,5 +78,7 @@ def register_env(
             # observation_kwargs
             channels_first=channels_first,
         ),
-        max_episode_steps=max_episode_steps,
+        max_episode_steps=None, 
+        # WARNING: DO NOT set `max_episode_steps` here. Instead, one should use the
+        # episode length specified by `time_limit` and `control_timestep` in suite.
     )
