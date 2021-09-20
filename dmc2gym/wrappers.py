@@ -191,6 +191,7 @@ class DMCWrapper(core.Env):
         obs = self._get_obs(time_step)
         self.current_state = _flatten_obs(time_step.observation)
         extra["discount"] = time_step.discount
+        extra["observation_dict"] = time_step.observation
         return obs, reward, done, extra
 
     def reset(self):
