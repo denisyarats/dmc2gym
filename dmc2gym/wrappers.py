@@ -4,7 +4,7 @@ from dm_env import specs
 import numpy as np
 
 
-def _spec_to_box(spec):
+def _spec_to_box(spec, dtype):
     def extract_min_max(s):
         assert s.dtype == np.float64 or s.dtype == np.float32
         dim = np.int(np.prod(s.shape))
@@ -20,10 +20,10 @@ def _spec_to_box(spec):
         mn, mx = extract_min_max(s)
         mins.append(mn)
         maxs.append(mx)
-    low = np.concatenate(mins, axis=0)
-    high = np.concatenate(maxs, axis=0)
+    low = np.concatenate(mins, axis=0).astype(dtype)
+    high = np.concatenate(maxs, axis=0).astype(dtype)
     assert low.shape == high.shape
-    return spaces.Box(low, high, dtype=np.float32)
+    return spaces.Box(low, high, dtype=dtype)
 
 
 def _flatten_obs(obs):
@@ -67,7 +67,7 @@ class DMCWrapper(core.Env):
         )
 
         # true and normalized action spaces
-        self._true_action_space = _spec_to_box([self._env.action_spec()])
+        self._true_action_space = _spec_to_box([self._env.action_spec()], np.float32)
         self._norm_action_space = spaces.Box(
             low=-1.0,
             high=1.0,
@@ -83,11 +83,13 @@ class DMCWrapper(core.Env):
             )
         else:
             self._observation_space = _spec_to_box(
-                self._env.observation_spec().values()
+                self._env.observation_spec().values(),
+                np.float64
             )
             
         self._state_space = _spec_to_box(
-                self._env.observation_spec().values()
+            self._env.observation_spec().values(),
+            np.float64
         )
         
         self.current_state = None
