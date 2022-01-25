@@ -134,6 +134,10 @@ class DMCWrapper(core.Env):
     def action_space(self):
         return self._norm_action_space
 
+    @property
+    def reward_range(self):
+        return 0, self._frame_skip
+
     def seed(self, seed):
         self._true_action_space.seed(seed)
         self._norm_action_space.seed(seed)
