@@ -1,7 +1,7 @@
 # MODIFIED BY Yawen Duan (https://github.com/kmdanielduan) to be able to
 # use `suite_module` to load environments from a dm_control based suite
 
-from typing import Union, Mapping
+from typing import Mapping, Union
 
 import numpy as np
 from dm_env import specs
@@ -19,12 +19,16 @@ def _extract_min_max(s):
         zeros = np.zeros(dim, dtype=s.dtype)
         return s.minimum + zeros, s.maximum + zeros
 
+
 def _action_spec_to_box(spec: Union[specs.Array, specs.BoundedArray]) -> spaces.Box:
     low, high = _extract_min_max(spec)
     assert low.shape == high.shape
     return spaces.Box(low, high, dtype=spec.dtype)
 
-def _obs_spec_to_box(spec: Mapping[str, Union[specs.Array, specs.BoundedArray]]) -> spaces.Box:
+
+def _obs_spec_to_box(
+    spec: Mapping[str, Union[specs.Array, specs.BoundedArray]]
+) -> spaces.Box:
     spec_values = spec.values()
     mins, maxs = [], []
     for s in spec_values:
@@ -34,12 +38,13 @@ def _obs_spec_to_box(spec: Mapping[str, Union[specs.Array, specs.BoundedArray]])
     low = np.concatenate(mins, axis=0)
     high = np.concatenate(maxs, axis=0)
     assert low.shape == high.shape
-    # ! WARNING (yawen): Setting obs_spec dtype to be that of the first element of observation
-    # A more principled thing to do is represent observation as a dict as dm_control does,
-    # and flattening observation to arrays externally.
+    # ! WARNING (yawen): Set obs_spec dtype to match the first element of observation
+    # A more principled thing to do is represent observation as a dict as dm_control
+    # does, and flattening observation to arrays externally.
     res_dtype = list(spec_values)[0].dtype
     assert all(v.dtype == res_dtype for v in spec_values)
     return spaces.Box(low, high, dtype=res_dtype)
+
 
 def _flatten_obs(obs):
     obs_pieces = []
@@ -104,7 +109,10 @@ class DMCWrapper(core.Env):
         # true and normalized action spaces
         self._true_action_space = _action_spec_to_box(self._env.action_spec())
         self._norm_action_space = spaces.Box(
-            low=-1.0, high=1.0, shape=self._true_action_space.shape, dtype=self._true_action_space.dtype
+            low=-1.0,
+            high=1.0,
+            shape=self._true_action_space.shape,
+            dtype=self._true_action_space.dtype,
         )
 
         # create observation space
@@ -114,9 +122,7 @@ class DMCWrapper(core.Env):
                 low=0, high=255, shape=shape, dtype=np.uint8
             )
         else:
-            self._observation_space = _obs_spec_to_box(
-                self._env.observation_spec()
-            )
+            self._observation_space = _obs_spec_to_box(self._env.observation_spec())
 
         self._state_space = _obs_spec_to_box(self._env.observation_spec())
 
@@ -157,7 +163,7 @@ class DMCWrapper(core.Env):
     @property
     def action_space(self):
         return self._norm_action_space
-    
+
     @property
     def dt(self):
         return self._env.physics.timestep() * self._frame_skip
@@ -167,10 +173,11 @@ class DMCWrapper(core.Env):
         """Returns the np.random.RandomState object `self._env.task._random`"""
         return self._env.task._random
 
-
     def seed(self, seed=None):
-        """Wrapper seeding sets the seed in `self._env.task` using the seeding scheme in `gym.utils.seeding`
-        Note this will results in different seeding schema between dm_control-only and wrapperd environments"""
+        """Wrapper seeding sets the seed in `self._env.task` using the seeding scheme
+        in `gym.utils.seeding`. Note this will results in different seeding schema
+        between dm_control-only and wrapperd environments.
+        """
         self._env.task._random, seed = seeding.np_random(seed)
 
         return [seed]
@@ -205,9 +212,9 @@ class DMCWrapper(core.Env):
         width_ = self.render_kwargs["width"] if width is None else width
         camera_id_ = self.render_kwargs["camera_id"] if camera_id is None else camera_id
         img = self._env.physics.render(
-            height = height_,
-            width = width_,
-            camera_id = camera_id_,
+            height=height_,
+            width=width_,
+            camera_id=camera_id_,
             **kwargs,
         )
 

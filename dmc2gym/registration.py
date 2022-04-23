@@ -8,6 +8,7 @@ from gym.envs.registration import register as gym_reg
 
 from dmc2gym.utils import dmc_task2str
 
+
 def register_suite(
     suite_module,
     tag=None,
@@ -23,7 +24,8 @@ def register_suite(
 
 
 def register_env(
-    # a suite module that contains load() function that returns a dm_control.rl.control.Environment object
+    # A suite module that contains load() function that returns
+    # a dm_control.rl.control.Environment object
     suite_module,
     # dm_control env kwargs
     domain_name,
@@ -41,7 +43,9 @@ def register_env(
     # observation_kwargs
     channels_first=True,
 ):
-    """Register a single dm_control based environment by identifier (domain_name, task_name)"""
+    """Register a single dm_control based environment by identifier
+    (domain_name, task_name)
+    """
     assert hasattr(
         suite_module, "load"
     ), f"{suite_module} doesn't have load() attribute."
@@ -83,7 +87,7 @@ def register_env(
             # observation_kwargs
             channels_first=channels_first,
         ),
-        max_episode_steps=None, 
+        max_episode_steps=None,
         # WARNING: DO NOT set `max_episode_steps` here. Instead, one should use the
         # episode length specified by `time_limit` and `control_timestep` in suite.
     )
